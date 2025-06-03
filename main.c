@@ -36,8 +36,8 @@ int main(void)
     Delay_Init();
 
     GPIOConfig();
-    GPIO_SetBits(GPIOC, GPIO_Pin_4);
-
+    // GPIO_SetBits(GPIOC, GPIO_Pin_4);
+    GPIOC->BSHR |= 1 << LED_PIN;
     while(1)
     {
 
