@@ -27,14 +27,32 @@ void GPIOConfig(void)
     GPIOC->CFGLR &= ~(0b1111 << (LED_PIN * 4));
     GPIOC->CFGLR |= (0b0011 << (LED_PIN * 4));
 }
+#define SW 0
+#define HSE_ON 16
+#define HSE_READY 17
+
+void ClockStart() {
+    RCC->CTLR |= (1 << 18);  // HSEBYP
+    // Enable HSE
+    RCC->CTLR |= 1 << HSE_ON;
+
+    // Wait HSE to start
+    while (!(RCC->CTLR & (1 << HSE_READY))) ;
+
+    // Switch to HSE
+    RCC->CFGR0 &= ~(0b11 << SW);
+    RCC->CFGR0 |= (0b01 << SW);  // HSE
+}
 
 
 int main(void)
 {
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_1);
-    SystemCoreClockUpdate();
     Delay_Init();
+   // SystemCoreClockUpdate();
+    ClockStart(); 
 
+   
     GPIOConfig();
     // GPIO_SetBits(GPIOC, GPIO_Pin_4);
     GPIOC->BSHR |= 1 << LED_PIN;
