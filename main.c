@@ -8,9 +8,9 @@
 
 void USARTx_CFG2(void)
 {
-    // PD5 - TX PD6 - RX
+     // PD5 - TX PD6 - RX
     RCC->APB2PCENR |= RCC_APB2Periph_GPIOD;
-   RCC->APB2PCENR |= RCC_APB2Periph_USART1;
+    RCC->APB2PCENR |= RCC_APB2Periph_USART1;
     // RCC->APB2PCENR |= RCC_APB2Periph_AFIO;  // alternative function
 
     // TX 
@@ -24,28 +24,20 @@ void USARTx_CFG2(void)
 
 
     // RX 
-    GPIOD->CFGLR &= ~GPIO_CFGLR_MODE6;  // input mode\
+    GPIOD->CFGLR &= ~GPIO_CFGLR_MODE6;  // input mode
 
     // floating input, full duplex
     GPIOD->CFGLR &= ~GPIO_CFGLR_CNF6;
     GPIOD->CFGLR |= GPIO_CFGLR_CNF6_0;  
 
-    USART1->BRR = 
- 
+    // USART1->BRR = (26 << 4) | 1; // 115200 when 48mhz
+    USART1->BRR = (13 << 4) | 0; // 115200 when 24mhz
 
 
-   
-
-
-    USART_InitStructure.USART_BaudRate = 115200;
-    USART_InitStructure.USART_WordLength = USART_WordLength_8b;
-    USART_InitStructure.USART_StopBits = USART_StopBits_1;
-    USART_InitStructure.USART_Parity = USART_Parity_No;
-    USART_InitStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-    USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
-
-    USART_Init(USART1, &USART_InitStructure);
-    USART_Cmd(USART1, ENABLE);
+    USART1->CTLR1 |= USART_CTLR1_TE | USART_CTLR1_RE;
+    // USART1->CTLR1 = USART_CTLR1_M; // 0 - stands for 8bits word length
+    USART1->CTLR1 |= USART_CTLR1_UE; 
+    // USART1->CTLR2 = USART_CTLR2_STOP; // 00 - stands for 1 stop bit 
 }
 
 void GPIOConfig(void)
