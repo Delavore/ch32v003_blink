@@ -6,6 +6,29 @@
 #define LED_MASK     (0b1111 << LED_SHIFT)
 #define LED_CONFIG   (0b0011 << LED_SHIFT)
 
+__attribute((interrupt("WCH-Interrupt-fast")))
+void USART1_IRQHandler(void)
+{
+    // volatile uint16_t tmp = USART1->DATAR;  // DATAR has length 9: [8:0]
+
+    const char greeting[] = "hello\n\r";
+    
+        
+        int i = 0;
+        while (greeting[i]) {
+            USART_SendData(USART1, greeting[i]);
+            // USART_SendData(USART1, '\n');
+            while(USART_GetFlagStatus(USART1, USART_FLAG_TXE) == RESET)
+            {   
+                // waiting for sending finish 
+            }
+            i++;
+        }
+    
+    volatile uint16_t tmp = USART1->DATAR;  // DATAR has length 9: [8:0]
+    // USART1->STATR &= ~USART_STATR_RXNE;
+}
+
 void USARTx_CFG2(void)
 {
      // PD5 - TX PD6 - RX
@@ -33,11 +56,15 @@ void USARTx_CFG2(void)
     // USART1->BRR = (26 << 4) | 1; // 115200 when 48mhz
     USART1->BRR = (13 << 4) | 0; // 115200 when 24mhz
 
+ USART1->CTLR1 |= USART_CTLR1_RXNEIE;  // enable rx interrupt (when we get 1 byte than flag int is rise)
 
+     
     USART1->CTLR1 |= USART_CTLR1_TE | USART_CTLR1_RE;
     // USART1->CTLR1 = USART_CTLR1_M; // 0 - stands for 8bits word length
     USART1->CTLR1 |= USART_CTLR1_UE; 
     // USART1->CTLR2 = USART_CTLR2_STOP; // 00 - stands for 1 stop bit 
+
+     NVIC_EnableIRQ(USART1_IRQn);
 }
 
 void GPIOConfig(void)
